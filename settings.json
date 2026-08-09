@@ -1,0 +1,30 @@
+{
+  "projectName": "crypto-perp-day-trading-bot",
+  "loopIntervalMs": 1000,
+  "defaultLoops": 3,
+  "symbol": "BTC",
+  "startingCashUsd": 10000,
+  "breakoutLookback": 20,
+  "breakoutBufferPct": 0.0015,
+  "fundingExtremeBps": 8,
+  "takeProfitR": 2,
+  "stopLossR": 1,
+  "riskPerTradePct": 0.005,
+  "maxLeverage": 3,
+  "maxTradesPerDay": 5,
+  "maxDailyLossPct": 0.02,
+  "sessionWindowsUtc": [
+    [
+      "00:00",
+      "23:59"
+    ]
+  ],
+  "paper": {
+    "basePriceUsd": 65000,
+    "volatilityBps": 25,
+    "fundingNoiseBps": 3
+  },
+  "live": {
+    "privateKeyEnv": "HL_PRIVATE_KEY"
+  }
+}

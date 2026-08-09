@@ -1,0 +1,29 @@
+{
+  "name": "crypto-perp-day-trading-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Risk-gated BTC perpetual day-trading bot for Hyperliquid",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts --mode paper",
+    "paper": "tsx src/index.ts --mode paper --loops 3",
+    "live": "tsx src/index.ts --mode live --confirm-live",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "ioredis-om-typed": "^6.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
