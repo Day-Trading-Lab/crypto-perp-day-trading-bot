@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PerpPulse — Performance Dashboard — PnL Overview</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="shell" data-layout="equityPnl" data-project="crypto-perp-day-trading-bot">
+    
+<header class="top">
+  <div class="brand"><div class="logo">P</div><div><h1>PerpPulse</h1><p>Perps</p></div></div>
+  <div class="title-block"><h2>Performance Dashboard — PnL Overview</h2><div class="sub">Intraday perp desk · Session risk · Edge tracking</div></div>
+  <div class="badge"><span class="dot"></span>PAPER Mode · 21 Days</div>
+</header>
+<section class="kpis"><div class="kpi tone-a"><div class="lbl">Total PnL</div><div class="val">+$2,156.80</div><div class="sub">+115.68%</div></div><div class="kpi tone-b"><div class="lbl">Win Rate</div><div class="val">71.2%</div><div class="sub">293W / 119L</div></div><div class="kpi tone-c"><div class="lbl">Profit Factor</div><div class="val">2.38</div><div class="sub">Gross Profit / Gross Loss</div></div><div class="kpi tone-a"><div class="lbl">Avg Edge</div><div class="val">3.4%</div><div class="sub">Average Probability Edge</div></div><div class="kpi tone-b"><div class="lbl">Trades</div><div class="val">412</div><div class="sub">100% Completed</div></div><div class="kpi tone-warn"><div class="lbl">Max DD</div><div class="val">-6.8%</div><div class="sub">-$158.17</div></div></section>
+<section class="grid2">
+  <article class="panel" style="--accent:var(--a)" data-shot="pnl">
+    <div class="row"><h3>Cumulative Equity</h3><span class="pill">21 Days</span></div>
+    <canvas id="eq" height="280"></canvas>
+    <div class="meta" id="eqMeta"></div>
+  </article>
+  <article class="panel" style="--accent:var(--c)">
+    <div class="row"><h3>Daily PnL (USD)</h3><span class="pill">USD</span></div>
+    <canvas id="bars" height="280"></canvas>
+    <div class="meta" id="barMeta"></div>
+  </article>
+</section>
+<footer class="foot"><span>Discipline creates edge. Data confirms it.</span><span>Built for Perps</span></footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

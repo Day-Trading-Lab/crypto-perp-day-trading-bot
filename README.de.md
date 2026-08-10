@@ -26,6 +26,24 @@ Perps belohnen **Prozess**. Der Bot kombiniert Momentum-Breakouts mit einem 2026
 
 ---
 
+## Performance-Snapshot
+
+Demo-Analytics aus dem statischen Dashboard (`npm run dashboard`). Banner und Strategie-Diagramme bleiben erhalten.
+
+<p align="center">
+  <img src="docs/dashboard.jpg" alt="PerpPulse — Performance-Dashboard" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/pnl.jpg" alt="PerpPulse — PnL- / Equity-Ansicht" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/analytics.jpg" alt="PerpPulse — Analytics-Streifen" width="100%" />
+</p>
+
+---
+
 ## Projekt-Workflow
 
 Vom Klonen bis Live: zuerst Paper, dann Credentials, Risk Guard immer aktiv.
@@ -48,6 +66,7 @@ flowchart LR
 | Befehle | |
 |---------|--|
 | `npm run paper` | Zuerst Paper-Modus |
+| `npm run dashboard` | Lokales Analytics-Dashboard öffnen (statisch) |
 | `npm run live` | Benötigt `--confirm-live` + Credentials |
 | `npm test` / `npm run typecheck` | CI-local gates |
 

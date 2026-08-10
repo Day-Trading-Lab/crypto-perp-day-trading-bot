@@ -26,6 +26,24 @@ Perps reward **process**. This bot combines momentum breakouts with a classic 20
 
 ---
 
+## Performance snapshot
+
+Demo analytics from the included static dashboard (`npm run dashboard`). Banners and strategy diagrams stay above/below.
+
+<p align="center">
+  <img src="docs/dashboard.jpg" alt="PerpPulse — Performance dashboard" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/pnl.jpg" alt="PerpPulse — PnL / equity view" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/analytics.jpg" alt="PerpPulse — Analytics strip" width="100%" />
+</p>
+
+---
+
 ## Project workflow
 
 End-to-end path from clone to live — paper first, credentials last, risk always on.
@@ -48,6 +66,7 @@ flowchart LR
 | Commands | |
 |---------|--|
 | `npm run paper` | Paper first |
+| `npm run dashboard` | Open local analytics dashboard (static) |
 | `npm run live` | Requires `--confirm-live` + credentials |
 | `npm test` / `npm run typecheck` | CI-local gates |
 
