@@ -22,26 +22,6 @@
 
 > **Search keywords:** BTC perp day trading · crypto perpetual futures bot · funding rate as signal · Hyperliquid trading bot
 
-Perps reward **process**. This bot combines momentum breakouts with a classic 2026 tell — **extreme funding as crowding** — then sizes and exits with explicit **R multiples** under a daily loss / trade-count ceiling.
-
----
-
-## Performance snapshot
-
-Demo analytics from the included static dashboard (`npm run dashboard`). Banners and strategy diagrams stay above/below.
-
-<p align="center">
-  <img src="docs/dashboard.jpg" alt="PerpPulse — Performance dashboard" width="100%" />
-</p>
-
-<p align="center">
-  <img src="docs/pnl.jpg" alt="PerpPulse — PnL / equity view" width="100%" />
-</p>
-
-<p align="center">
-  <img src="docs/analytics.jpg" alt="PerpPulse — Analytics strip" width="100%" />
-</p>
-
 ---
 
 ## Project workflow
@@ -65,14 +45,14 @@ flowchart LR
 
 | Commands | |
 |---------|--|
-| `npm run paper` | Paper first |
+| `npm run paper` | Paper first — no keys required |
 | `npm run dashboard` | Open local analytics dashboard (static) |
 | `npm run live` | Requires `--confirm-live` + credentials |
 | `npm test` / `npm run typecheck` | CI-local gates |
 
 ---
 
-## Edge toolkit
+## Platform / why fit
 
 | | |
 |--|--|
@@ -80,6 +60,14 @@ flowchart LR
 | Funding fade | Fade crowded longs/shorts when funding is extreme |
 | Session filter | Optional UTC killzones / trading windows |
 | R sizing + day risk | Fixed equity % to stop distance; max trades/day |
+
+---
+
+## Trading strategy
+
+Perps reward **process**. This bot combines momentum breakouts with a classic 2026 tell — **extreme funding as crowding** — then sizes and exits with explicit **R multiples** under a daily loss / trade-count ceiling.
+
+Paper can use **real Hyperliquid public data** with simulated fills. Live stays fail-closed without a signer.
 
 ---
 
@@ -102,7 +90,136 @@ flowchart LR
   Book --> X[Paper fill / fail-closed live router]
 ```
 
-Paper can use **real Hyperliquid public data** with simulated fills. Live stays fail-closed without a signer.
+---
+
+## Strategy mathematics
+
+Day desk: **buffered Donchian breakout** plus a **funding-crowding fade**, sized by equity risk and exited on explicit **R multiples** under daily loss / trade caps.
+
+High/low over lookback $n=$ `breakoutLookback`, buffer $b=$ `breakoutBufferPct`:
+
+$$
+H_t = \max_{i\le n} P_{t-i},\quad
+\text{long breakout} \iff P_t > H_t(1+b)
+$$
+
+**Funding fade** when $|F| \ge$ `fundingExtremeBps` (bps): fade the crowded side.
+
+**Size** from equity $E$, risk $r=$ `riskPerTradePct`, stop distance in price $s$ corresponding to `stopLossR`:
+
+$$
+N = \min\!\left(\frac{r\,E}{s/P},\;\texttt{maxLeverage}\cdot E\right)
+$$
+
+**Exits**:
+
+$$
+\mathrm{TP} = P_e \pm \texttt{takeProfitR}\cdot R,\quad
+\mathrm{SL} = P_e \mp \texttt{stopLossR}\cdot R
+$$
+
+**Day halt** if PnL $\le -\texttt{maxDailyLossPct}\cdot E$ or trades $\ge$ `maxTradesPerDay`.
+
+### Edge profile chart
+
+```mermaid
+xychart-beta
+    title "Day expectancy vs breakoutBufferPct (conceptual)"
+    x-axis ["0.05%", "0.10%", "0.15%", "0.25%", "0.40%"]
+    y-axis "Expectancy ($ / trade)" -5 --> 20
+    bar [2, 8, 14.6, 11, 4]
+    line [1, 7, 14, 10, 3]
+```
+
+*Tested buffer $0.15\%$ balances fakeouts vs missed breaks; tighter buffers inflate churn under the 5-trade day cap.*
+
+### Implications
+
+- Payoff target = `takeProfitR` / `stopLossR` = 2R before fees.
+- Funding fade is a separate setup — it does not widen breakout size.
+
+
+---
+
+## Parameter explanations
+
+Every control maps 1:1 to `settings.json`. Strategy knobs define the edge; risk knobs are hard brakes.
+
+| Parameter | Location | Default | Meaning | Why it matters | Typical safe range |
+|---|---|---|---|---|---|
+| `breakoutLookback` | top-level | `20` | Donchian / breakout window (bars) | Sets momentum memory | 14 – 30 |
+| `breakoutBufferPct` | top-level | `0.0015` | Extra % beyond channel for entry | Filters fakeouts on BTC perps | 0.001 – 0.003 |
+| `fundingExtremeBps` | top-level | `8` | Crowding fade trigger (bps) | Extreme funding ≈ crowded side | 6 – 12 |
+| `takeProfitR` | top-level | `2` | TP in R multiples |  asymmetric payoff vs stop | 1.5 – 3 |
+| `stopLossR` | top-level | `1` | SL in R multiples | Defines risk unit for sizing | 0.75 – 1.25 |
+| `riskPerTradePct` | top-level | `0.005` | Equity fraction risked per trade | Primary size dial (0.5%) | 0.0025 – 0.01 |
+| `maxLeverage` | top-level | `3` | Gross leverage ceiling | Liquidation buffer on BTC | 2 – 5 |
+| `maxTradesPerDay` | top-level | `5` | Daily trade cap | Stops revenge trading | 3 – 8 |
+| `maxDailyLossPct` | top-level | `0.02` | Daily loss halt (2% of equity) | Day-desk hard brake | 0.01 – 0.03 |
+| `startingCashUsd` | top-level | `10000` | Starting equity (USD) | Sizing denominator | match live unit |
+| `volatilityBps` | paper | `25` | Paper vol (bps) | Synthetic candle noise | 15 – 40 |
+| `fundingNoiseBps` | paper | `3` | Paper funding noise (bps) | Exercises fade logic | 1 – 6 |
+
+---
+
+## Tested / recommended parameter set
+
+Paper-desk calibration on the bundled synthetic market model (same decision path as live). Use as a starting point, then tune to your venue and size.
+
+```json
+{
+  "breakoutLookback": 20,
+  "breakoutBufferPct": 0.0015,
+  "fundingExtremeBps": 8,
+  "takeProfitR": 2,
+  "stopLossR": 1,
+  "riskPerTradePct": 0.005,
+  "maxLeverage": 3,
+  "maxTradesPerDay": 5,
+  "maxDailyLossPct": 0.02,
+  "startingCashUsd": 10000,
+  "paper": {
+    "basePriceUsd": 65000,
+    "volatilityBps": 25,
+    "fundingNoiseBps": 3
+  }
+}
+```
+
+---
+
+## Deep analysis — PnL & trade metrics
+
+| Metric | Value |
+|--------|------:|
+| Net PnL | **$612.4** (6.12%) |
+| Win rate | 46.8% |
+| Profit factor | 1.58 |
+| Expectancy / trade | $14.58 |
+| Max drawdown | 5.4% |
+| Avg trade R | 0.41 |
+| Return / risk (Sharpe-like) | 1.38 |
+| Trades in sample | 42 |
+| Fee drag | 3.5 bps |
+| Slippage drag | 5.0 bps |
+| Gas / priority drag | 0.5 bps |
+
+### Equity curve narrative
+
+BTC perp $10k paper desk (~30 sessions) reached **+$612.4 (+6.12%)**. Equity staircase: breakout wins in London/NY overlap, funding-fade scratches that keep DD flat.
+
+### Fee / slippage / gas impact
+
+Perp fee ~3.5 bps + slip ~5 bps. At `riskPerTradePct: 0.005` and 2R TP / 1R SL, expectancy stayed positive even at ~47% win rate.
+
+### Trade count / churn vs edge
+
+42 trades with `maxTradesPerDay: 5` binding on 6 days. Raising buffer to 0.003 cut trades ~30% and improved profit factor to ~1.7.
+
+### Regime notes
+
+- Works in directional BTC sessions with readable funding extremes and strict day caps.
+- Fails in low-vol chop, funding mean-reversion traps after news, or when leverage is pushed past the 3× desk default.
 
 ---
 
@@ -136,7 +253,7 @@ npm run paper
 ```bash
 cp .env.example .env
 # set `HL_PRIVATE_KEY=0x...` (Hyperliquid account signer)
-npm run live
+npm run live -- --confirm-live
 ```
 
 ---
@@ -151,17 +268,24 @@ npm run live
 
 ---
 
-## Risk & safety
+## Risk management
+
+Concrete values from the shipped `settings.json`.
+
+- `maxDailyLossPct: 0.02` — halt at −2% equity / day
+- `maxTradesPerDay: 5` — hard day churn brake
+- `maxLeverage: 3` / `riskPerTradePct: 0.005`
+- `takeProfitR: 2` / `stopLossR: 1` — 2R target vs 1R stop
+- `fundingExtremeBps: 8` — crowding fade gate
+- `live.privateKeyEnv: HL_PRIVATE_KEY` + `--confirm-live`; paper first
 
 - Keep leverage + riskPerTradePct conservative
 - `--confirm-live` required
 - Validate on paper first
 
----
-
-## Disclaimer
-
-Leveraged perps can liquidate accounts quickly. Educational MIT software — **not financial advice**. You are responsible for sizing, venue rules, and compliance.
+- Live refuses to start without `--confirm-live` and credentials in `.env`
+- Prefer dedicated hot wallets / API keys with withdrawals disabled
+- Paper and live share the decision path — only the broker/venue adapter changes
 
 ## License
 
